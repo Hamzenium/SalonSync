@@ -6,36 +6,44 @@ A modular, microservices-based platform that enables barbers and clients to mana
 
 ## Architecture Diagram
 
+```mermaid
+graph TB
+    subgraph Client["Client Layer"]
+        Frontend[Frontend<br/>React / Web UI]
+    end
+    
+    subgraph Services["Microservices Layer"]
+        Core[Core Service<br/>Flask + JWT<br/>Auth & Bookings]
+        Recommender[Recommender Service<br/>Python HTTP<br/>Barber Suggestions]
+        ML[ML Service<br/>Python FastAPI<br/>Smart Predictions]
+    end
+    
+    subgraph Data["Data & Messaging Layer"]
+        MongoDB[(MongoDB<br/>Users, Barbers<br/>Appointments)]
+        RabbitMQ{{RabbitMQ<br/>Event Queue<br/>Pub/Sub}}
+    end
+    
+    subgraph Background["Background Services"]
+        Notification[Notification Service<br/>Go<br/>Email/SMS/WebSocket]
+    end
+    
+    Frontend -->|HTTP| Core
+    Frontend -->|HTTP| Recommender
+    Frontend -->|HTTP| ML
+    
+    Core -->|Store| MongoDB
+    Core -->|Publish Events| RabbitMQ
+    
+    RabbitMQ -->|BOOKING_CONFIRMED<br/>BOOKING_CANCELED| Notification
+    
+    style Frontend fill:#61dafb,stroke:#333,stroke-width:3px,color:#000
+    style Core fill:#000,stroke:#333,stroke-width:3px,color:#fff
+    style Recommender fill:#3776ab,stroke:#333,stroke-width:3px,color:#fff
+    style ML fill:#009688,stroke:#333,stroke-width:3px,color:#fff
+    style MongoDB fill:#47a248,stroke:#333,stroke-width:3px,color:#fff
+    style RabbitMQ fill:#ff6600,stroke:#333,stroke-width:3px,color:#fff
+    style Notification fill:#00add8,stroke:#333,stroke-width:3px,color:#fff
 ```
-                  +--------------------+
-                  |     Frontend       |
-                  |  (React / Web UI)  |
-                  +--------+-----------+
-                           | 
-         +-----------------+------------------------------+
-         |                 |                              |
-         v                 v                              v
-+---------------+   +----------------------+         +-------------------+
-| Core Service  |   | Recommender Service  |         |   ML Service      |
-|  (Flask + JWT)|   |  (Python, HTTP)      |         | (Python,FastApi)  |
-+-------+-------+   +----------------------+         +-------------------+
-        |
-        v
-   +----+-----+
-   | MongoDB  |
-   +----+-----+
-        |
-        v
-   +----+-----+          (Pub/Sub via RabbitMQ)
-   | RabbitMQ | -----------------------------------+
-   +----+-----+                                    |
-                                                   v
-                                        +------------------------+
-                                        | Notification Service   |
-                                        |       (Go)             |
-                                        +------------------------+
-```
-
 ---
 
 ## Components
